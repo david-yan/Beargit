@@ -145,7 +145,6 @@ int cunittester()
 {
    CU_pSuite pSuite = NULL;
    CU_pSuite pSuite2 = NULL;
-   CU_pSuite pSuite3 = NULL;
 
    /* initialize the CUnit test registry */
    if (CUE_SUCCESS != CU_initialize_registry())
@@ -177,18 +176,6 @@ int cunittester()
       CU_cleanup_registry();
       return CU_get_error();
    }
-
-   pSuite3 = CU_add_suite("Suite_3", init_suite, clean_suite);
-   if (NULL == pSuite3) {
-      CU_cleanup_registry();
-      return CU_get_error();
-   }
-
-   if (NULL == CU_add_test(pSuite3, "Simple Test #3", simple_sample_test)) 
-   {
-       CU_cleanup_registry();
-       return CU_get_error();
-    }
 
    /* Run all tests using the CUnit Basic interface */
    CU_basic_set_mode(CU_BRM_VERBOSE);

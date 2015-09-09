@@ -100,7 +100,7 @@ int beargit_add(const char* filename) {
  */
 
 int beargit_status() {
-  
+  /* COMPLETE THE REST */
 
   return 0;
 }
