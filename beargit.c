@@ -100,7 +100,23 @@ int beargit_add(const char* filename) {
  */
 
 int beargit_status() {
-  
+  FILE* findex = fopen(".beargit/.index", "r");
+
+  printf("Tracked files: \n\n");
+
+  char line[FILENAME_SIZE];
+  int count;
+  while (fgets(line, sizeof(line), findex)) {
+    count++;
+    strtok(line, "\n");
+    printf("%s \n", line);
+  }
+
+  if (count == 1 || count == 0) {
+    printf("\nThere is %d file total.\n", count);
+  } else {
+    printf("\nThere are %d files total.\n", count);
+  }
 
   return 0;
 }
@@ -112,9 +128,33 @@ int beargit_status() {
  */
 
 int beargit_rm(const char* filename) {
-  /* COMPLETE THE REST */
+  FILE* findex = fopen(".beargit/.index", "r");
+  FILE *fnewindex = fopen(".beargit/.newindex", "w");
 
-  return 0;
+  int found = 0;
+
+  char line[FILENAME_SIZE];
+  while(fgets(line, sizeof(line), findex)) {
+    strtok(line, "\n");
+    if (strcmp(line, filename) == 0) {
+      found = 1;
+      printf("found");
+    } else {
+      fprintf(fnewindex, "%s\n", line);
+    }
+  }
+cd
+  fclose(findex);
+  fclose(fnewindex);
+
+  fs_mv(".beargit/.newindex", ".beargit/.index");
+
+  if (found) {
+    return 0;
+  } else {
+    fprintf(stderr, "ERROR:  File %s not tracked.\n", filename);
+    return 1;
+  }
 }
 
 /* beargit commit -m <msg>
