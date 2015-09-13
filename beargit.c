@@ -37,7 +37,8 @@
  * - None if successful
  */
 
-int beargit_init(void) {
+int beargit_init(void) 
+{
   fs_mkdir(".beargit");
 
   FILE* findex = fopen(".beargit/.index", "w");
@@ -66,14 +67,17 @@ int beargit_init(void) {
  * - None if successful
  */
 
-int beargit_add(const char* filename) {
+int beargit_add(const char* filename) 
+{
   FILE* findex = fopen(".beargit/.index", "r");
   FILE *fnewindex = fopen(".beargit/.newindex", "w");
 
   char line[FILENAME_SIZE];
-  while(fgets(line, sizeof(line), findex)) {
+  while(fgets(line, sizeof(line), findex)) 
+  {
     strtok(line, "\n");
-    if (strcmp(line, filename) == 0) {
+    if (strcmp(line, filename) == 0) 
+    {
       fprintf(stderr, "ERROR:  File %s has already been added.\n", filename);
       fclose(findex);
       fclose(fnewindex);
@@ -99,22 +103,27 @@ int beargit_add(const char* filename) {
  *
  */
 
-int beargit_status() {
+int beargit_status() 
+{
   FILE* findex = fopen(".beargit/.index", "r");
 
   printf("Tracked files: \n\n");
 
   char line[FILENAME_SIZE];
   int count;
-  while (fgets(line, sizeof(line), findex)) {
+  while (fgets(line, sizeof(line), findex)) 
+  {
     count++;
     strtok(line, "\n");
     printf("%s \n", line);
   }
 
-  if (count == 1 || count == 0) {
+  if (count == 1 || count == 0) 
+  {
     printf("\nThere is %d file total.\n", count);
-  } else {
+  } 
+  else 
+  {
     printf("\nThere are %d files total.\n", count);
   }
 
@@ -127,19 +136,22 @@ int beargit_status() {
  *
  */
 
-int beargit_rm(const char* filename) {
+int beargit_rm(const char* filename) 
+{
   FILE* findex = fopen(".beargit/.index", "r");
   FILE *fnewindex = fopen(".beargit/.newindex", "w");
 
   int found = 0;
 
   char line[FILENAME_SIZE];
-  while(fgets(line, sizeof(line), findex)) {
+  while(fgets(line, sizeof(line), findex)) 
+  {
     strtok(line, "\n");
-    if (strcmp(line, filename) == 0) {
+    if (strcmp(line, filename) == 0) 
+    {
       found = 1;
-      printf("found");
-    } else {
+    } else 
+    {
       fprintf(fnewindex, "%s\n", line);
     }
   }
@@ -147,9 +159,8 @@ int beargit_rm(const char* filename) {
   fclose(findex);
   fclose(fnewindex);
 
-  fs_mv(".beargit/.newindex", ".beargit/.index");
-
   if (found) {
+    fs_mv(".beargit/.newindex", ".beargit/.index");
     return 0;
   } else {
     fprintf(stderr, "ERROR:  File %s not tracked.\n", filename);
@@ -166,10 +177,26 @@ int beargit_rm(const char* filename) {
 const char* go_bears = "THIS IS BEAR TERRITORY!";
 
 int is_commit_msg_ok(const char* msg) {
-  if (strcmp(msg, go_bears) == 0) {
-    return 1;
-  } else {
-    return 0;
+  char *msg_counter = msg;
+  char *check_bears = go_bears;
+  char *check_msg = msg_counter;
+  while (*check_msg != 0)
+  {
+    int matching = 1;
+    while (*check_bears != 0 && *check_msg != 0 && matching)
+    {
+      if (*check_msg != *check_bears)
+      {
+        matching = 0;
+      }
+      check_msg ++;
+      check_bears ++;
+    }
+    if (matching == 1 && *check_bears == 0)
+      return 1;
+    msg_counter ++;
+    check_msg = msg_counter;
+    check_bears = go_bears;
   }
 }
 
@@ -181,7 +208,18 @@ int is_commit_msg_ok(const char* msg) {
  */
 
 void next_commit_id(char* commit_id) {
+<<<<<<< HEAD
     
+=======
+     char next_id[COMMIT_ID_SIZE];
+     char branch[BRANCHNAME_SIZE];
+     read_string_from_file(".beargit/.current_branch", branch, BRANCHNAME_SIZE);
+     char *new_name = malloc(strlen(*commit_id) + strlen(branch) + 1);
+     strcpy(new_name, *commit_id);
+     strcat(new_name, branch);
+     cryptohash(new_name, next_id);
+     *commit_id = next_id;
+>>>>>>> c58e2efcd0e62dbafae3ec2e77056af87d17d876
 }
 
 int beargit_commit(const char* msg) {
@@ -194,7 +232,45 @@ int beargit_commit(const char* msg) {
   read_string_from_file(".beargit/.prev", commit_id, COMMIT_ID_SIZE);
   next_commit_id(commit_id);
 
-  /* COMPLETE THE REST */
+  //Make .beargit/<commit_id> directory
+  char commit_dir[snprintf(NULL, 0, ".beargit/%s", commit_id) + 1];
+  sprintf(commit_dir, ".beargit/%s", commit_id);
+  fs_mkdir(commit_dir);
+
+  //copy .beargit/.index file to .beargit/<commit_id>/.index
+  char *index_dir = malloc(snprintf(NULL, 0, ".beargit/%s/.index", commit_id) + 1);
+  sprintf(index_dir, ".beargit/%s/.index", commit_id);
+  // fclose(fopen(index_dir, "w"));
+  fs_cp(".beargit/.index", index_dir);
+
+  //make and write message into .beargit/<commit_id>/.msg
+  char msg_dir[snprintf(NULL, 0, ".beargit/%s/.msg", commit_id) + 1];
+  sprintf(msg_dir, ".beargit/%s/.msg", commit_id);
+  FILE* msg_file = fopen(msg_dir, "w");
+  fclose(msg_file);
+  write_string_to_file(msg_dir, msg);
+
+  //copy all files from .beargit/.index to .beargit/<commit_id>
+  FILE* index_file = fopen(".beargit/.index", "r");
+  char line[FILENAME_SIZE];
+  while(fgets(line, sizeof(line), index_file))
+  {
+    strtok(line, "\n");
+    char *new_file = malloc(snprintf(NULL, 0, ".beargit/%s/%s", commit_id, line) + 1);
+    sprintf(new_file, ".beargit/%s/%s", commit_id, line);
+    // FILE* temp = fopen(new_file, "w");
+    // fclose(new_file);
+    fs_cp(line, new_file);
+  }
+  fclose(index_file);
+
+  //copy .beargit/.prev to .beargit/<commit_id>/.prev
+  char* prev = malloc(snprintf(NULL, 0, ".beargit/%s/.prev", commit_id) + 1);
+  sprintf(prev, ".beargit/%s/.prev", commit_id);
+  fs_cp(".beargit/.prev", prev);
+
+  //write current commit_id to .beargit/.prev
+  write_string_to_file(".beargit/.prev", commit_id);
 
   return 0;
 }
