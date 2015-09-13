@@ -94,7 +94,7 @@ void simple_log_test(void)
     run_commit(&commit_list, "THIS IS BEAR TERRITORY!2");
     run_commit(&commit_list, "THIS IS BEAR TERRITORY!3");
 
-    retval = beargit_log();
+    retval = beargit_log(INT_MAX);
     CU_ASSERT(0==retval);
 
     struct commit* cur_commit = commit_list;
@@ -137,6 +137,21 @@ void simple_log_test(void)
     free_commit_list(&commit_list);
 }
 
+void test_commit_1(void)
+{
+  int retval;
+  retval = beargit_init();
+  CU_ASSERT(retval == 0);
+
+  retval = beargit_commit("THIS IS NOT BEAR TERRITORY!");
+  CU_ASSERT(retval == 1);
+  const int LINE_SIZE = 512;
+  char *line = malloc(LINE_SIZE);
+  read_string_from_file("TEST_STDERR", line, LINE_SIZE);
+  CU_ASSERT_STRING_EQUAL("ERROR: Message must contain \"THIS IS BEAR TERRITORY!\"\n", line);
+
+}
+
 /* The main() function for setting up and running the tests.
  * Returns a CUE_SUCCESS on successful running, another
  * CUnit error code on failure.
@@ -146,6 +161,7 @@ int cunittester()
    CU_pSuite pSuite = NULL;
    CU_pSuite pSuite2 = NULL;
    CU_pSuite pSuite3 = NULL;
+   CU_pSuite commit_tests = NULL;
 
    /* initialize the CUnit test registry */
    if (CUE_SUCCESS != CU_initialize_registry())
@@ -172,11 +188,11 @@ int cunittester()
    }
 
    /* Add tests to the Suite #2 */
-   if (NULL == CU_add_test(pSuite2, "Log output test", simple_log_test))
-   {
-      CU_cleanup_registry();
-      return CU_get_error();
-   }
+   // if (NULL == CU_add_test(pSuite2, "Log output test", simple_log_test))
+   // {
+   //    CU_cleanup_registry();
+   //    return CU_get_error();
+   // }
 
    pSuite3 = CU_add_suite("Suite_3", init_suite, clean_suite);
    if (NULL == pSuite3) {
@@ -188,6 +204,19 @@ int cunittester()
    {
        CU_cleanup_registry();
        return CU_get_error();
+    }
+
+    commit_tests = CU_add_suite("Commit Tests", init_suite, clean_suite);
+    if (NULL == commit_tests)
+    {
+      CU_cleanup_registry();
+      return CU_get_error();
+    }
+
+    if (NULL == CU_add_test(commit_tests, "Commit Test #1", test_commit_1))
+    {
+      CU_cleanup_registry();
+      return CU_get_error();
     }
 
    /* Run all tests using the CUnit Basic interface */
