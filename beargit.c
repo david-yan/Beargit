@@ -143,7 +143,7 @@ int beargit_rm(const char* filename) {
       fprintf(fnewindex, "%s\n", line);
     }
   }
-cd
+
   fclose(findex);
   fclose(fnewindex);
 
@@ -166,8 +166,11 @@ cd
 const char* go_bears = "THIS IS BEAR TERRITORY!";
 
 int is_commit_msg_ok(const char* msg) {
-  /* COMPLETE THE REST */
-  return 0;
+  if (strcmp(msg, go_bears) == 0) {
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
 /* Use next_commit_id to fill in the rest of the commit ID.
@@ -178,7 +181,7 @@ int is_commit_msg_ok(const char* msg) {
  */
 
 void next_commit_id(char* commit_id) {
-     /* COMPLETE THE REST */
+    
 }
 
 int beargit_commit(const char* msg) {
