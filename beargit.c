@@ -208,18 +208,17 @@ int is_commit_msg_ok(const char* msg) {
  */
 
 void next_commit_id(char* commit_id) {
-<<<<<<< HEAD
-    
-=======
      char next_id[COMMIT_ID_SIZE];
      char branch[BRANCHNAME_SIZE];
      read_string_from_file(".beargit/.current_branch", branch, BRANCHNAME_SIZE);
      char *new_name = malloc(strlen(*commit_id) + strlen(branch) + 1);
      strcpy(new_name, *commit_id);
      strcat(new_name, branch);
+     strcat(new_name, 0);
+     printf(new_name[COMMIT_ID_SIZE + BRANCHNAME_SIZE + 1]);
      cryptohash(new_name, next_id);
      *commit_id = next_id;
->>>>>>> c58e2efcd0e62dbafae3ec2e77056af87d17d876
+     free((void *)new_name);
 }
 
 int beargit_commit(const char* msg) {
@@ -242,6 +241,7 @@ int beargit_commit(const char* msg) {
   sprintf(index_dir, ".beargit/%s/.index", commit_id);
   // fclose(fopen(index_dir, "w"));
   fs_cp(".beargit/.index", index_dir);
+  free((void*) index_dir);
 
   //make and write message into .beargit/<commit_id>/.msg
   char msg_dir[snprintf(NULL, 0, ".beargit/%s/.msg", commit_id) + 1];
@@ -261,6 +261,7 @@ int beargit_commit(const char* msg) {
     // FILE* temp = fopen(new_file, "w");
     // fclose(new_file);
     fs_cp(line, new_file);
+    free((void*) new_file);
   }
   fclose(index_file);
 
@@ -272,6 +273,7 @@ int beargit_commit(const char* msg) {
   //write current commit_id to .beargit/.prev
   write_string_to_file(".beargit/.prev", commit_id);
 
+  free((void *) prev);
   return 0;
 }
 
