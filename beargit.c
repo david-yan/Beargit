@@ -224,7 +224,7 @@ void next_commit_id(char* commit_id) {
 int at_branch_head() {
   FILE* current_branch = fopen(".beargit/.current_branch", "r");
   char *line[FILENAME_SIZE];
-  fgets(line, sizeof(line), findex);
+  fgets(line, sizeof(line), current_branch);
   if (line[0] != "\0") {
     return 0;
   } else {
@@ -297,7 +297,6 @@ int beargit_commit(const char* msg) {
  */
 
 int beargit_log(int limit) {
-  /* COMPLETE THE REST */
   return 0;
 }
 
