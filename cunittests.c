@@ -148,7 +148,25 @@ void test_commit_1(void)
   const int LINE_SIZE = 512;
   char *line = malloc(LINE_SIZE);
   read_string_from_file("TEST_STDERR", line, LINE_SIZE);
-  CU_ASSERT_STRING_EQUAL("ERROR: Message must contain \"THIS IS BEAR TERRITORY!\"\n", line);
+  char message[55] = "ERROR:  Message must contain \"THIS IS BEAR TERRITORY!\"\n";
+  CU_ASSERT_STRING_EQUAL(message, line);
+
+  //both methods work
+  CU_ASSERT_STRING_EQUAL("ERROR:  Message must contain \"THIS IS BEAR TERRITORY!\"\n", line);
+}
+void test_commit_2(void)
+{
+  int retval;
+  retval = beargit_init();
+  CU_ASSERT(retval == 0);
+
+  FILE* text = fopen("a.txt", "w");
+  fclose(text);
+  retval = beargit_add("a.txt");
+  CU_ASSERT(retval == 0);
+
+  retval = beargit_commit("THIS IS BEAR TERRITORY!");
+  CU_ASSERT(retval == 0);
 
 }
 
