@@ -211,14 +211,13 @@ void next_commit_id(char* commit_id) {
      char next_id[COMMIT_ID_SIZE];
      char branch[BRANCHNAME_SIZE];
      read_string_from_file(".beargit/.current_branch", branch, BRANCHNAME_SIZE);
-     char *new_name = malloc(strlen(*commit_id) + strlen(branch) + 1);
-     strcpy(new_name, *commit_id);
+     char *new_name = malloc(strlen(commit_id) + strlen(branch) + 1);
+     strcpy(new_name, commit_id);
      strcat(new_name, branch);
      strcat(new_name, 0);
      printf(new_name[COMMIT_ID_SIZE + BRANCHNAME_SIZE + 1]);
      cryptohash(new_name, next_id);
-     *commit_id = next_id;
-     free((void *)new_name);
+     strcpy(commit_id, next_id);
 }
 
 int beargit_commit(const char* msg) {
@@ -227,7 +226,7 @@ int beargit_commit(const char* msg) {
     return 1;
   }
 
-  char commit_id[COMMIT_ID_SIZE];
+  char *commit_id = malloc(COMMIT_ID_SIZE + 1);
   read_string_from_file(".beargit/.prev", commit_id, COMMIT_ID_SIZE);
   next_commit_id(commit_id);
 
