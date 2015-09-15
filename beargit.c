@@ -215,6 +215,7 @@ void next_commit_id(char* commit_id) {
      strcpy(new_name, commit_id);
      strcat(new_name, branch);
      cryptohash(new_name, next_id);
+     free(new_name);
      strcpy(commit_id, next_id);
 }
 
