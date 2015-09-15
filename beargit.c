@@ -220,10 +220,23 @@ void next_commit_id(char* commit_id) {
      strcpy(commit_id, next_id);
 }
 
+int at_branch_head() {
+  FILE* current_branch = fopen(".beargit/.current_branch", "r");
+  char *line[FILENAME_SIZE];
+  fgets(line, sizeof(line), findex);
+  if (line[0] != "\0") {
+    return 0;
+  } else {
+    return 1;
+  }
+}
+
 int beargit_commit(const char* msg) {
   if (!is_commit_msg_ok(msg)) {
     fprintf(stderr, "ERROR:  Message must contain \"%s\"\n", go_bears);
     return 1;
+  } else if (!at_branch_head()) {
+    fprintf(stderr, "ERROR:  Need to be on HEAD of a branch to commit.");
   }
 
   char *commit_id = malloc(COMMIT_ID_SIZE + 1);
