@@ -223,7 +223,7 @@ void next_commit_id(char* commit_id) {
 int at_branch_head() {
   FILE* current_branch = fopen(".beargit/.current_branch", "r");
   char *line[FILENAME_SIZE];
-  fgets(line, sizeof(line), findex);
+  fgets(line, sizeof(line), current_branch);
   if (line[0] != "\0") {
     return 0;
   } else {
@@ -237,6 +237,7 @@ int beargit_commit(const char* msg) {
     return 1;
   } else if (!at_branch_head()) {
     fprintf(stderr, "ERROR:  Need to be on HEAD of a branch to commit.");
+    return 1;
   }
 
   char *commit_id = malloc(COMMIT_ID_SIZE + 1);
@@ -252,7 +253,7 @@ int beargit_commit(const char* msg) {
   char *index_dir = malloc(snprintf(NULL, 0, ".beargit/%s/.index", commit_id) + 1);
   sprintf(index_dir, ".beargit/%s/.index", commit_id);
   // fclose(fopen(index_dir, "w"));
-  fs_cp(".beargit/.index", index_dir);
+  fs_cp(".beargit/.index", index_dir);//index_dir is the address for .beargit/commit_id/.index
   free((void*) index_dir);
 
   //make and write message into .beargit/<commit_id>/.msg
@@ -286,6 +287,7 @@ int beargit_commit(const char* msg) {
   write_string_to_file(".beargit/.prev", commit_id);
 
   free((void *) prev);
+  free((void *) commit_id);
   return 0;
 }
 
