@@ -214,15 +214,30 @@ void next_commit_id(char* commit_id) {
      char *new_name = malloc(strlen(commit_id) + strlen(branch) + 1);
      strcpy(new_name, commit_id);
      strcat(new_name, branch);
+     strcat(new_name, 0);
+     printf(new_name[COMMIT_ID_SIZE + BRANCHNAME_SIZE + 1]);
      cryptohash(new_name, next_id);
      free(new_name);
      strcpy(commit_id, next_id);
+}
+
+int at_branch_head() {
+  FILE* current_branch = fopen(".beargit/.current_branch", "r");
+  char *line[FILENAME_SIZE];
+  fgets(line, sizeof(line), findex);
+  if (line[0] != "\0") {
+    return 0;
+  } else {
+    return 1;
+  }
 }
 
 int beargit_commit(const char* msg) {
   if (!is_commit_msg_ok(msg)) {
     fprintf(stderr, "ERROR:  Message must contain \"%s\"\n", go_bears);
     return 1;
+  } else if (!at_branch_head()) {
+    fprintf(stderr, "ERROR:  Need to be on HEAD of a branch to commit.");
   }
 
   char *commit_id = malloc(COMMIT_ID_SIZE + 1);
@@ -239,6 +254,7 @@ int beargit_commit(const char* msg) {
   sprintf(index_dir, ".beargit/%s/.index", commit_id);
   // fclose(fopen(index_dir, "w"));
   fs_cp(".beargit/.index", index_dir);
+  free((void*) index_dir);
 
   //make and write message into .beargit/<commit_id>/.msg
   char msg_dir[snprintf(NULL, 0, ".beargit/%s/.msg", commit_id) + 1];
@@ -258,6 +274,7 @@ int beargit_commit(const char* msg) {
     // FILE* temp = fopen(new_file, "w");
     // fclose(new_file);
     fs_cp(line, new_file);
+    free((void*) new_file);
   }
   fclose(index_file);
 
@@ -269,6 +286,7 @@ int beargit_commit(const char* msg) {
   //write current commit_id to .beargit/.prev
   write_string_to_file(".beargit/.prev", commit_id);
 
+  free((void *) prev);
   return 0;
 }
 
