@@ -107,7 +107,7 @@ int beargit_status()
 {
   FILE* findex = fopen(".beargit/.index", "r");
 
-  printf("Tracked files: \n\n");
+  printf("Tracked files:\n\n");
 
   char line[FILENAME_SIZE];
   int count;
@@ -118,7 +118,7 @@ int beargit_status()
     printf("%s \n", line);
   }
 
-  if (count == 1 || count == 0) 
+  if (count == 1) 
   {
     printf("\nThere is %d file total.\n", count);
   } 
@@ -214,16 +214,14 @@ void next_commit_id(char* commit_id) {
      char *new_name = malloc(strlen(commit_id) + strlen(branch) + 1);
      strcpy(new_name, commit_id);
      strcat(new_name, branch);
-     strcat(new_name, 0);
-     printf(new_name[COMMIT_ID_SIZE + BRANCHNAME_SIZE + 1]);
      cryptohash(new_name, next_id);
-     free(new_name);
      strcpy(commit_id, next_id);
+     free(new_name);
 }
 
 int at_branch_head() {
   FILE* current_branch = fopen(".beargit/.current_branch", "r");
-  char *line[FILENAME_SIZE];
+  char *line[COMMIT_ID_SIZE];
   fgets(line, sizeof(line), current_branch);
   if (line[0] != "\0") {
     return 0;
@@ -236,10 +234,11 @@ int beargit_commit(const char* msg) {
   if (!is_commit_msg_ok(msg)) {
     fprintf(stderr, "ERROR:  Message must contain \"%s\"\n", go_bears);
     return 1;
-  } else if (!at_branch_head()) {
-    fprintf(stderr, "ERROR:  Need to be on HEAD of a branch to commit.");
-    return 1;
-  }
+  } 
+  // else if (!at_branch_head()) {
+  //   fprintf(stderr, "ERROR:  Need to be on HEAD of a branch to commit.");
+  //   return 1;
+  // }
 
   char *commit_id = malloc(COMMIT_ID_SIZE + 1);
   read_string_from_file(".beargit/.prev", commit_id, COMMIT_ID_SIZE);
@@ -255,7 +254,6 @@ int beargit_commit(const char* msg) {
   sprintf(index_dir, ".beargit/%s/.index", commit_id);
   // fclose(fopen(index_dir, "w"));
   fs_cp(".beargit/.index", index_dir);//index_dir is the address for .beargit/commit_id/.index
-  free((void*) index_dir);
 
   //make and write message into .beargit/<commit_id>/.msg
   char msg_dir[snprintf(NULL, 0, ".beargit/%s/.msg", commit_id) + 1];
@@ -287,6 +285,7 @@ int beargit_commit(const char* msg) {
   //write current commit_id to .beargit/.prev
   write_string_to_file(".beargit/.prev", commit_id);
 
+  free((void*) index_dir);
   free((void *) prev);
   free((void *) commit_id);
   return 0;
@@ -299,7 +298,34 @@ int beargit_commit(const char* msg) {
  */
 
 int beargit_log(int limit) {
+  char commit_id[COMMIT_ID_SIZE];
+  read_string_from_file(".beargit/.prev", commit_id, COMMIT_ID_SIZE);
+  int count = 0;
+  if (at_first_commit(commit_id))
+  {
+    fprintf(stderr, "ERROR:  There are no commits.\n");
+    return 1;
+  }
+  while (count < limit && !at_first_commit(commit_id))
+  {
+    char msg[MSG_SIZE];
+    char msg_dir[FILENAME_SIZE];
+    sprintf(msg_dir, ".beargit/%s/.msg", commit_id);
+    read_string_from_file(msg_dir, msg, MSG_SIZE);
+    fprintf(stdout, "commit %s\n   %s\n\n", commit_id, msg);
+    char commit_dir[FILENAME_SIZE];
+    sprintf(commit_dir, ".beargit/%s/.prev", commit_id);
+    read_string_from_file(commit_dir, commit_id, COMMIT_ID_SIZE);
+  }
   return 0;
+}
+
+int at_first_commit(char *commit_id)
+{
+  for(int i = 0; i < strlen(commit_id); i++)
+    if (commit_id[i] != '0') 
+      return 0;
+  return 1;
 }
 
 
