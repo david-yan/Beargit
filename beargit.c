@@ -51,6 +51,9 @@ int beargit_init(void)
   write_string_to_file(".beargit/.prev", "0000000000000000000000000000000000000000");
   write_string_to_file(".beargit/.current_branch", "master");
 
+  fopen(".beargit/.branch_master", "w");
+  fs_cp(".beargit/.branch_master", ".beargit/.prev");
+
   return 0;
 }
 
@@ -331,7 +334,20 @@ int get_branch_number(const char* branch_name) {
  */
 
 int beargit_branch() {
-  /* COMPLETE THE REST */
+  FILE* branches = fopen(".beargit/.branches", "r");
+  FILE* current_branch = fopen(".beargit/branches", "r"); 
+
+  char line[FILENAME_SIZE];
+  char current[FILENAME_SIZE];
+  fgets(current, sizeof(current), current_branch);
+
+  while(fgets(line, sizeof(line), branches)) {
+    if (strcmp(line, current) == 0) {
+      printf("*  %s", line);
+    } else {
+      printf("   %s", line);
+    }
+  }
 
   return 0;
 }
