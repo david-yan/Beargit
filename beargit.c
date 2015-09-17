@@ -52,7 +52,7 @@ int beargit_init(void)
   write_string_to_file(".beargit/.current_branch", "master");
 
   fopen(".beargit/.branch_master", "w");
-  fs_cp(".beargit/.branch_master", ".beargit/.prev");
+  fs_cp(".beargit/.prev", ".beargit/.branch_master");
 
   return 0;
 }
@@ -223,14 +223,9 @@ void next_commit_id(char* commit_id) {
 }
 
 int at_branch_head() {
-  FILE* current_branch = fopen(".beargit/.current_branch", "r");
-  char *line[COMMIT_ID_SIZE];
-  fgets(line, sizeof(line), current_branch);
-  if (line[0] != "\0") {
-    return 0;
-  } else {
-    return 1;
-  }
+  char current_branch[BRANCHNAME_SIZE];
+  read_string_from_file(".beargit/.current_branch", current_branch, BRANCHNAME_SIZE);
+  return strlen(current_branch);
 }
 
 int beargit_commit(const char* msg) {
@@ -238,10 +233,10 @@ int beargit_commit(const char* msg) {
     fprintf(stderr, "ERROR:  Message must contain \"%s\"\n", go_bears);
     return 1;
   } 
-  // else if (!at_branch_head()) {
-  //   fprintf(stderr, "ERROR:  Need to be on HEAD of a branch to commit.");
-  //   return 1;
-  // }
+  else if (!at_branch_head()) {
+    fprintf(stderr, "ERROR:  Need to be on HEAD of a branch to commit.");
+    return 1;
+  }
 
   char *commit_id = malloc(COMMIT_ID_SIZE + 1);
   read_string_from_file(".beargit/.prev", commit_id, COMMIT_ID_SIZE);
@@ -397,7 +392,7 @@ int is_it_a_commit_id(const char* commit_id) {
 int beargit_checkout(const char* arg, int new_branch) {
   // Get the current branch
   char current_branch[BRANCHNAME_SIZE];
-  read_string_from_file(".beargit/.current_branch", "current_branch", BRANCHNAME_SIZE);
+  read_string_from_file(".beargit/.current_branch", current_branch, BRANCHNAME_SIZE);
 
   // If not detached, update the current branch by storing the current HEAD into that branch's file...
   if (strlen(current_branch)) {
