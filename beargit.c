@@ -380,13 +380,23 @@ int beargit_branch() {
  */
 
 int checkout_commit(const char* commit_id) {
-  /* COMPLETE THE REST */
+  char address[9 + COMMIT_ID_SIZE] = ".beargit/";
+  strcat(address, commit_id);
+
+  FILE *commit = fopen(address, "r");
+  
   return 0;
 }
 
 int is_it_a_commit_id(const char* commit_id) {
-  /* COMPLETE THE REST */
-  return 1;
+  char beargit[9 + COMMIT_ID_SIZE] = ".beargit/";
+  strcat(beargit, commit_id);
+
+  if (access( beargit, F_OK ) != -1) {
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
 int beargit_checkout(const char* arg, int new_branch) {
