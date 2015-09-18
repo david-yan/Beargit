@@ -49,7 +49,7 @@ int beargit_init(void)
   fclose(fbranches);
 
   write_string_to_file(".beargit/.prev", "0000000000000000000000000000000000000000");
-  write_string_to_file(".beargit/.current_branch", "master");
+  write_string_to_file(".beargit/.current_branch", "master\n");
 
   fopen(".beargit/.branch_master", "w");
   fs_cp(".beargit/.prev", ".beargit/.branch_master");
@@ -283,6 +283,8 @@ int beargit_commit(const char* msg) {
   //write current commit_id to .beargit/.prev
   write_string_to_file(".beargit/.prev", commit_id);
 
+  printf(commit_id);
+
   free((void*) index_dir);
   free((void *) prev);
   free((void *) commit_id);
@@ -356,7 +358,7 @@ int get_branch_number(const char* branch_name) {
 
 int beargit_branch() {
   FILE* branches = fopen(".beargit/.branches", "r");
-  FILE* current_branch = fopen(".beargit/branches", "r"); 
+  FILE* current_branch = fopen(".beargit/.current_branch", "r"); 
 
   char line[FILENAME_SIZE];
   char current[FILENAME_SIZE];
@@ -370,6 +372,8 @@ int beargit_branch() {
     }
   }
 
+  fclose(branches);
+  fclose(current_branch);
   return 0;
 }
 
@@ -380,10 +384,31 @@ int beargit_branch() {
  */
 
 int checkout_commit(const char* commit_id) {
-  char address[9 + COMMIT_ID_SIZE] = ".beargit/";
-  strcat(address, commit_id);
+  char *folder = malloc(snprintf(NULL, 0, ".beargit/%s", commit_id) + 1);
+  sprintf(folder, ".beargit/%s", commit_id);
 
-  FILE *commit = fopen(address, "r");
+  char *index = malloc(snprintf(NULL, 0, ".beargit/%s/.index", commit_id) + 1);
+  sprintf(index, ".beargit/%s/.index", commit_id);
+
+  FILE* index_file = fopen(index, "r");
+
+  free((void*) folder);
+  free((void*) index);
+
+  char line[FILENAME_SIZE];
+
+  while(fgets(line, sizeof(line), index_file))
+  {
+    strtok(line, "\n");
+    char *new_file = malloc(snprintf(NULL, 0, ".beargit/%s/%s", commit_id, line) + 1);
+    sprintf(new_file, ".beargit/%s/%s", commit_id, line);
+    // FILE* temp = fopen(new_file, "w");
+    // fclose(new_file);
+    fs_cp(new_file, line);
+    free((void*) new_file);
+  }
+
+  fclose(index_file);
   
   return 0;
 }
