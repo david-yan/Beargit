@@ -50,8 +50,7 @@ int beargit_init(void)
 
   write_string_to_file(".beargit/.prev", "0000000000000000000000000000000000000000");
   write_string_to_file(".beargit/.current_branch", "master");
-
-  fopen(".beargit/.branch_master", "w");
+  
   fs_cp(".beargit/.prev", ".beargit/.branch_master");
 
   return 0;
@@ -113,14 +112,14 @@ int beargit_status()
   printf("Tracked files:\n\n");
 
   char line[FILENAME_SIZE];
-  int count;
+  int count = 0;
   while (fgets(line, sizeof(line), findex)) 
   {
     count++;
     strtok(line, "\n");
     printf("%s \n", line);
   }
-
+  fclose(findex);
   if (count == 1) 
   {
     printf("\nThere is %d file total.\n", count);
@@ -201,6 +200,7 @@ int is_commit_msg_ok(const char* msg) {
     check_msg = msg_counter;
     check_bears = go_bears;
   }
+  return 0;
 }
 
 /* Use next_commit_id to fill in the rest of the commit ID.
@@ -591,6 +591,7 @@ int beargit_merge(const char* arg) {
       fprintf(stdout, "%s added\n", line);
     }
   }
+  fclose(file);
 
   return 0;
 }
@@ -606,5 +607,6 @@ int is_being_tracked(char* filename)
     if (strcmp(line, filename) == 0)
       return 1;
   }
+  fclose(index);
   return 0;
 }
